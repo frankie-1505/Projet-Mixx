@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traitement - Ifacturier Plus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .split-view {
+            display: grid;
+            grid-template-columns: 58% 42%;
+            gap: 20px;
+            min-height: calc(100vh - 180px);
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 15px 20px;
+            background: #fafafa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-btn {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .dropdown-btn:hover {
+            background: #2563eb;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 280px;
+            z-index: 100;
+        }
+
+        .dropdown.active .dropdown-menu {
+            display: block;
+            animation: dropdownSlideIn 0.2s ease-out;
+        }
+
+        @keyframes dropdownSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+            color: #374151;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f9fafb;
+        }
+
+        .dropdown-item:active {
+            background: #f3f4f6;
+        }
+
+        .dropdown-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            color: #9ca3af;
+        }
+
+        .dropdown-item.disabled:hover {
+            background: transparent;
+        }
+
+        .table-container {
+            overflow: auto;
+            max-height: calc(100vh - 250px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        th {
+            background: #fafafa;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .cards-container {
+            overflow-y: auto;
+            max-height: calc(100vh - 250px);
+            padding: 15px;
+        }
+
+        .transaction-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .transaction-card:hover {
+            border-color: #2c3e50;
+        }
+
+        .transaction-card.green {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .transaction-card.blue {
+            background: #eff6ff;
+            border-color: #93c5fd;
+        }
+
+        .transaction-card.orange {
+            background: #fffbeb;
+            border-color: #fcd34d;
+        }
+
+        .card-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            padding: 10px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            margin-bottom: 12px;
+        }
+
+        .card-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .card-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .amount-text {
+            font-size: 15px;
+            color: #059669;
+            font-weight: 700;
+            padding: 4px 8px;
+            margin-bottom: -4px;
+            white-space: nowrap;
+        }
+
+        .commission-text {
+            font-size: 15px;
+            color: #dc2626;
+            font-weight: 700;
+            padding: 4px 8px;
+            white-space: nowrap;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            color: #2c3e50;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #2c3e50;
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%234a5568' d='M4.427 6.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 6H4.604a.25.25 0 00-.177.427z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        .card-right {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-top: 50px;
+        }
+
+        .btn {
+            padding: 10px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #d1d5db;
+            background: white;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .btn-blue {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-blue:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled, .btn-blue:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #9ca3af;
+            border-color: #9ca3af;
+            color: #f3f4f6;
+        }
+
+        .btn:disabled:hover, .btn-blue:disabled:hover {
+            transform: none;
+            background: #9ca3af;
+            border-color: #9ca3af;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .footer-info {
+            margin-bottom: 12px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .btn-generate {
+            padding: 14px 30px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-generate:hover {
+            background: #1a252f;
+        }
+
+        .btn-generate:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f9fafb;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .modal-btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .modal-btn-cancel {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #f9fafb;
+        }
+
+        .modal-btn-submit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .modal-btn-submit:hover {
+            background: #2563eb;
+        }
+
+        .success-modal .modal-header {
+            background: #10b981;
+        }
+
+        .info-modal .modal-header {
+            background: #3b82f6;
+        }
+
+        .success-icon, .info-icon {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .success-icon {
+            color: #10b981;
+        }
+
+        .info-icon {
+            color: #3b82f6;
+        }
+
+        .modal-message {
+            text-align: center;
+            font-size: 16px;
+            color: #374151;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .modal-btn-primary {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 32px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-back {
+            padding: 8px 16px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #4b5563;
+        }
+
+        .confirm-modal .modal-overlay {
+            backdrop-filter: blur(4px);
+        }
+
+        .confirm-modal .modal-content {
+            max-width: 420px;
+            border-radius: 16px;
+            padding: 0;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .confirm-modal .modal-header {
+            background: white;
+            border-radius: 16px 16px 0 0;
+            border-bottom: none;
+            padding: 0;
+        }
+
+        .confirm-modal .modal-close {
+            display: none;
+        }
+
+        .confirm-modal .modal-body {
+            padding: 0;
+        }
+
+        .confirm-modal .modal-icon {
+            font-size: 56px;
+            text-align: center;
+            padding: 32px 24px 16px;
+        }
+
+        .confirm-modal .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            text-align: center;
+            padding: 0 24px;
+            margin-bottom: 16px;
+        }
+
+        .confirm-modal .modal-message {
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+            padding: 0 24px 32px;
+            line-height: 1.6;
+            background: transparent;
+            border: none;
+        }
+
+        .confirm-modal .modal-footer {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            border-radius: 0 0 16px 16px;
+            padding: 0;
+            display: flex;
+            gap: 0;
+            justify-content: stretch;
+        }
+
+        .confirm-modal .modal-btn-cancel,
+        .confirm-modal .modal-btn-submit {
+            flex: 1;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            background: white;
+            border-radius: 0;
+        }
+
+        .confirm-modal .modal-btn-cancel {
+            color: #6b7280;
+            border-right: 1px solid #e5e7eb;
+            border-radius: 0 0 0 16px;
+        }
+
+        .confirm-modal .modal-btn-cancel:hover {
+            background: #f9fafb;
+        }
+
+        .confirm-modal .modal-btn-submit {
+            color: #2563eb;
+            border-radius: 0 0 16px 0;
+        }
+
+        .confirm-modal .modal-btn-submit:hover {
+            background: #eff6ff;
+        }
+
+        .confirm-modal .modal-btn-cancel:active,
+        .confirm-modal .modal-btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            will-change: opacity, visibility;
+        }
+
+        .loader-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loader-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.15);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) translateZ(0); }
+            100% { transform: rotate(360deg) translateZ(0); }
+        }
+
+        .loader-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            transform: translateZ(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <h1 class="header-title">TRAITEMENT DES ETATS MIXX BY YAS</h1>
+            <button class="btn-back" onclick="goBack()">← Retour</button>
+        </div>
+        <div class="split-view">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 id="recapTitle"></h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead id="tableHead">
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Transactions</h3>
+                    <div class="dropdown" id="actionsDropdown">
+                        <button class="dropdown-btn" onclick="toggleDropdown()">
+                            Actions Rapides
+                            <span>▾</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item" id="actionBulkReversement" onclick="handleBulkReversement()">
+                                Valider tous les états de reversement
+                            </div>
+                            <div class="dropdown-item" id="actionBulkCommission" onclick="handleBulkCommission()">
+                                Valider tous les états de commissions
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cards-container" id="cardsContainer"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-info">
+                <strong id="completedCount">0</strong> transaction(s) traitée(s) sur <strong id="totalCount">0</strong>
+            </div>
+            <button class="btn-generate" id="generateBtn" disabled onclick="generatePDF()">
+                Générer les PDF de toutes les transactions traitées
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal DTRF -->
+    <div class="modal-overlay" id="modalDTRF">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">ÉTAT DTRF (IMMATRICULATION)</h2>
+                <button class="modal-close" onclick="closeModal('modalDTRF')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formDTRF" onsubmit="submitDTRF(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Numéro de dossier</label>
+                            <input type="text" class="form-input" name="numero_dossier" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de réception</label>
+                            <input type="date" class="form-input" name="date_reception" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nom du demandeur</label>
+                            <input type="text" class="form-input" name="nom_demandeur" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type de véhicule</label>
+                            <input type="text" class="form-input" name="type_vehicule">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Numéro d'immatriculation</label>
+                            <input type="text" class="form-input" name="numero_immatriculation">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Montant des frais</label>
+                            <input type="number" step="0.01" class="form-input" name="montant_frais">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Statut du dossier</label>
+                            <input type="text" class="form-input" name="statut_dossier">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Agent traitant</label>
+                            <input type="text" class="form-input" name="agent_traitant">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Observations</label>
+                            <input type="text" class="form-input" name="observations">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de traitement</label>
+                            <input type="date" class="form-input" name="date_traitement">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="modal-btn modal-btn-cancel" onclick="closeModal('modalDTRF')">Annuler</button>
+                        <button type="submit" class="modal-btn modal-btn-submit">Valider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Success -->
+    <div class="modal-overlay confirm-modal" id="modalSuccess">
+        <div class="modal-content">
+            <div class="modal-header"></div>
+            <div class="modal-body">
+                <div class="modal-icon" id="successIcon">✓</div>
+                <h2 class="modal-title" id="successTitle">Succès</h2>
+                <div class="modal-message" id="successMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-submit" onclick="closeModal('modalSuccess')">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal PIGUAL -->
+    <div class="modal-overlay" id="modalPigual">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">ÉTAT PIGUAL</h2>
+                <button class="modal-close" onclick="closeModal('modalPigual')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formPigual" onsubmit="submitPigual(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Référence</label>
+                            <input type="text" class="form-input" name="reference" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de demande</label>
+                            <input type="date" class="form-input" name="date_demande" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nom du client</label>
+                            <input type="text" class="form-input" name="nom_client" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Montant TTC</label>
+                            <input type="number" step="0.01" class="form-input" name="montant_ttc">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type de prestation</label>
+                            <input type="text" class="form-input" name="type_prestation">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mode de paiement</label>
+                            <input type="text" class="form-input" name="mode_paiement">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">État d'avancement</label>
+                            <input type="text" class="form-input" name="etat_avancement">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de clôture</label>
+                            <input type="date" class="form-input" name="date_cloture">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Remarques</label>
+                            <input type="text" class="form-input" name="remarques">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Validé par</label>
+                            <input type="text" class="form-input" name="valide_par">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="modal-btn modal-btn-cancel" onclick="closeModal('modalPigual')">Annuler</button>
+                        <button type="submit" class="modal-btn modal-btn-submit">Valider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation Retour -->
+    <div class="modal-overlay confirm-modal" id="modalConfirmBack">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('modalConfirmBack')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon">⚠️</div>
+                <h2 class="modal-title">Quitter le traitement</h2>
+                <div class="modal-message">
+                    Toutes les données saisies et le traitement en cours seront perdus.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" onclick="closeModal('modalConfirmBack')">Annuler</button>
+                <button class="modal-btn-submit" onclick="confirmGoBack()">Quitter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation PDF Généré -->
+    <div class="modal-overlay confirm-modal" id="modalPDFGenerated">
+        <div class="modal-content">
+            <div class="modal-header"></div>
+            <div class="modal-body">
+                <div class="modal-icon">✅</div>
+                <h2 class="modal-title">PDF générés avec succès</h2>
+                <div class="modal-message">
+                    Les documents PDF ont été générés et enregistrés.<br>Voulez-vous retourner à la page d'accueil ?
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" onclick="closeModal('modalPDFGenerated')">Non</button>
+                <button class="modal-btn-submit" onclick="confirmReturnHome()">Oui</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation Bulk Reversement -->
+    <div class="modal-overlay confirm-modal" id="modalBulkReversement">
+        <div class="modal-content">
+            <div class="modal-header"></div>
+            <div class="modal-body">
+                <div class="modal-icon">⚡</div>
+                <h2 class="modal-title">Validation en masse</h2>
+                <div class="modal-message" id="bulkReversementMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" onclick="closeModal('modalBulkReversement')">Annuler</button>
+                <button class="modal-btn-submit" onclick="confirmBulkReversement()">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation Bulk Commission -->
+    <div class="modal-overlay confirm-modal" id="modalBulkCommission">
+        <div class="modal-content">
+            <div class="modal-header"></div>
+            <div class="modal-body">
+                <div class="modal-icon">⚡</div>
+                <h2 class="modal-title">Validation en masse</h2>
+                <div class="modal-message" id="bulkCommissionMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" onclick="closeModal('modalBulkCommission')">Annuler</button>
+                <button class="modal-btn-submit" onclick="confirmBulkCommission()">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loader-overlay" id="loader">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <div class="loader-text">Génération des PDF en cours...</div>
+        </div>
+    </div>
+
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script>
+        let bridge;
+        let transactions = [];
+        let partners = [];
+        let transactionStates = {};
+
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+            bridge = channel.objects.bridge;
+        });
+
+        function goBack() {
+            openModal('modalConfirmBack');
+        }
+
+        function confirmGoBack() {
+            closeModal('modalConfirmBack');
+            if (bridge) {
+                bridge.goBack();
+            }
+        }
+
+        function initData(data) {
+            const parsed = JSON.parse(data);
+            document.getElementById('recapTitle').textContent = parsed.title;
+            transactions = parsed.transactions;
+            partners = parsed.partners;
+
+            transactions.forEach(t => {
+                transactionStates[t.id] = { remboursement: false, commission: false };
+            });
+
+            renderTable();
+            renderCards();
+            updateFooter();
+            updateActionsDropdown();
+        }
+
+        function renderTable() {
+            const hasCommission = transactions.some(t => t.commission > 0);
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+
+            if (hasCommission) {
+                thead.innerHTML = `
+                    <tr>
+                        <th>IDENTIFIANT</th>
+                        <th>ALIAS</th>
+                        <th>NOM</th>
+                        <th>DEBUT_PERIODE</th>
+                        <th>FIN_PERIODE</th>
+                        <th>MONTANT TRANS</th>
+                        <th>AGREGATION</th>
+                        <th>ANNULATION</th>
+                        <th>COMMISSION</th>
+                        <th>MONTANT A REVERSE</th>
+                    </tr>
+                `;
+                tbody.innerHTML = transactions.map(t => `
+                    <tr>
+                        <td>${t.id}</td>
+                        <td>${t.alias || '-'}</td>
+                        <td>${t.nom}</td>
+                        <td>${t.date_debut}</td>
+                        <td>${t.date_fin}</td>
+                        <td>${formatNumber(t.montant_trans)}</td>
+                        <td>${t.agregation || '-'}</td>
+                        <td>${t.annulation || '-'}</td>
+                        <td>${t.commission ? formatNumber(t.commission) : '-'}</td>
+                        <td>${formatNumber(t.montant_reverse)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th>NUMEROS</th>
+                        <th>SHORT_CODE</th>
+                        <th>NOM</th>
+                        <th>PERIODE_DEBUT</th>
+                        <th>PERIODE_FIN</th>
+                        <th>MONTANT_TOTAL</th>
+                        <th>ANNULATION</th>
+                        <th>MONTANT_A_REVERSE</th>
+                    </tr>
+                `;
+                tbody.innerHTML = transactions.map(t => `
+                    <tr>
+                        <td>${t.id}</td>
+                        <td>${t.alias || '-'}</td>
+                        <td>${t.nom}</td>
+                        <td>${t.date_debut}</td>
+                        <td>${t.date_fin}</td>
+                        <td>${formatNumber(t.montant_trans)}</td>
+                        <td>${t.annulation || '-'}</td>
+                        <td>${formatNumber(t.montant_reverse)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = transactions.map(t => createCard(t)).join('');
+
+            transactions.forEach(t => {
+                const partnerSelect = document.getElementById(`partner-${t.id}`);
+                if (partnerSelect && partnerSelect.selectedIndex > 0) {
+                    const selectedValue = partnerSelect.value;
+                    if (selectedValue && !selectedValue.includes('⚠️') && !selectedValue.includes('────') && selectedValue !== '-- Sélectionner --') {
+                        updateServices(t.id);
+                    }
+                }
+            });
+        }
+
+        function createCard(t) {
+            const matches = findPartnerMatches(t.nom);
+            const partnerOptions = buildPartnerOptions(matches);
+
+            return `
+                <div class="transaction-card" id="card-${t.id}">
+                    <div class="card-name">${t.nom} (${t.date_debut} - ${t.date_fin})</div>
+                    <div class="card-cols">
+                        <div class="card-left">
+                            <div class="amount-text">Montant à reverser : ${formatCurrency(t.montant_reverse)}</div>
+                            ${t.commission > 0 ? `<div class="commission-text">Commission : ${formatCurrency(t.commission)}</div>` : ''}
+                            <input type="text" placeholder="🔍 Barre de recherche..." oninput="filterPartners('${t.id}', this.value)">
+                            <select id="partner-${t.id}" onchange="updateServices('${t.id}')">${partnerOptions}</select>
+                            <select id="service-${t.id}">
+                                <option selected>COLLECTE DE PAIEMENTS</option>
+                            </select>
+                        </div>
+                        <div class="card-right">
+                            <button class="btn" id="btn-reversement-${t.id}" onclick="handleRemboursement('${t.id}')">ÉTAT DE REVERSEMENT</button>
+                            ${t.commission > 0 ? `<button class="btn" id="btn-commission-${t.id}" onclick="handleCommission('${t.id}')">ÉTAT DE COMMISSION</button>` : ''}
+                            <button class="btn btn-blue" disabled title="Fonctionnalité à venir">ETAT DTRF (IMMATRICULATION)</button>
+                            <button class="btn btn-blue" disabled title="Fonctionnalité à venir">ETAT PIGUAL</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function findPartnerMatches(name) {
+            const n = name.toLowerCase().trim();
+            return partners.filter(p =>
+                p.nom.toLowerCase() === n ||
+                (p.alias && p.alias.toLowerCase() === n) ||
+                n.includes(p.nom.toLowerCase()) ||
+                p.nom.toLowerCase().includes(n)
+            );
+        }
+
+        function buildPartnerOptions(matches) {
+            let options = '';
+            if (matches.length === 0) {
+                options += '<option>⚠️ Aucune correspondance</option>';
+            } else if (matches.length === 1) {
+                const p = matches[0];
+                options += `<option selected>${p.nom}</option>`;
+            } else {
+                options += '<option>-- Sélectionner --</option>';
+                matches.forEach(p => {
+                    options += `<option>${p.nom}</option>`;
+                });
+            }
+            options += '<option disabled>──── Tous les partenaires ────</option>';
+            const matchIds = matches.map(p => p.id);
+            partners.filter(p => !matchIds.includes(p.id)).forEach(p => {
+                options += `<option>${p.nom}</option>`;
+            });
+            return options;
+        }
+
+        function filterPartners(transactionId, search) {
+            const select = document.getElementById(`partner-${transactionId}`);
+            const options = select.options;
+            const searchLower = search.toLowerCase().trim();
+
+            for (let i = 0; i < options.length; i++) {
+                const text = options[i].text.toLowerCase();
+                options[i].hidden = searchLower && !text.includes(searchLower) && !text.includes('────');
+            }
+        }
+
+        function updateServices(transactionId) {
+            const partnerSelect = document.getElementById(`partner-${transactionId}`);
+            const serviceSelect = document.getElementById(`service-${transactionId}`);
+            const selectedText = partnerSelect.value;
+
+            if (!selectedText || selectedText.includes('⚠️') || selectedText.includes('────') || selectedText === '-- Sélectionner --') {
+                serviceSelect.innerHTML = '<option selected>COLLECTE DE PAIEMENTS</option>';
+                return;
+            }
+
+            const partnerName = selectedText.split(' (')[0].trim();
+            const partner = partners.find(p => p.nom === partnerName);
+
+            if (partner && partner.services && partner.services.length > 0) {
+                serviceSelect.innerHTML = partner.services.map(s =>
+                    `<option${s === 'COLLECTE DE PAIEMENTS' ? ' selected' : ''}>${s}</option>`
+                ).join('');
+            } else {
+                serviceSelect.innerHTML = '<option selected>COLLECTE DE PAIEMENTS</option>';
+            }
+        }
+
+        function showLoader() {
+            document.getElementById('loader').classList.add('show');
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').classList.remove('show');
+        }
+
+        function showSuccess(title, message) {
+            document.getElementById('successTitle').textContent = title;
+            document.getElementById('successMessage').innerHTML = message;
+            openModal('modalSuccess');
+        }
+
+        function handleValidation(id, type) {
+            const config = {
+                remboursement: {
+                    btnId: 'btn-reversement',
+                    stateKey: 'remboursement',
+                    bridgeMethod: 'remboursement',
+                    validatedText: '✓ REVERSEMENT VALIDÉ',
+                    title: 'État de reversement',
+                    message: 'État de reversement généré pour'
+                },
+                commission: {
+                    btnId: 'btn-commission',
+                    stateKey: 'commission',
+                    bridgeMethod: 'commission',
+                    validatedText: '✓ COMMISSION VALIDÉE',
+                    title: 'État de commission',
+                    message: 'État de commission généré pour'
+                }
+            }[type];
+
+            const btn = document.getElementById(`${config.btnId}-${id}`);
+            if (btn && btn.disabled) return;
+
+            transactionStates[id][config.stateKey] = true;
+            updateCardColor(id);
+            updateFooter();
+            updateActionsDropdown();
+            if (bridge) bridge[config.bridgeMethod](id);
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = config.validatedText;
+            }
+
+            const transaction = transactions.find(t => t.id === id);
+            showSuccess(config.title, `${config.message} :<br><strong>${transaction.nom}</strong><br><br>Transaction: ${id}`);
+        }
+
+        function handleRemboursement(id) { handleValidation(id, 'remboursement'); }
+        function handleCommission(id) { handleValidation(id, 'commission'); }
+
+        function updateActionsDropdown() {
+            const toggleActionBtn = (btnId, isDisabled, handler) => {
+                const btn = document.getElementById(btnId);
+                btn.classList.toggle('disabled', isDisabled);
+                btn.onclick = isDisabled ? null : handler;
+            };
+
+            const pendingReversement = transactions.filter(t => !transactionStates[t.id].remboursement).length;
+            toggleActionBtn('actionBulkReversement', pendingReversement === 0, handleBulkReversement);
+
+            const transactionsWithCommission = transactions.filter(t => t.commission > 0);
+            const pendingCommission = transactionsWithCommission.filter(t => !transactionStates[t.id].commission).length;
+            toggleActionBtn('actionBulkCommission', !transactionsWithCommission.length || !pendingCommission, handleBulkCommission);
+        }
+
+        let currentTransactionId = null;
+
+        function handleDTRF(id) {
+            currentTransactionId = id;
+            openModal('modalDTRF');
+        }
+
+        function handlePigual(id) {
+            currentTransactionId = id;
+            openModal('modalPigual');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'modalDTRF') {
+                document.getElementById('formDTRF').reset();
+            } else if (modalId === 'modalPigual') {
+                document.getElementById('formPigual').reset();
+            }
+        }
+
+        function submitDTRF(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            console.log('DTRF Data:', data, 'Transaction ID:', currentTransactionId);
+
+            if (bridge) {
+                bridge.dtrf(currentTransactionId);
+            }
+
+            closeModal('modalDTRF');
+        }
+
+        function submitPigual(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            console.log('Pigual Data:', data, 'Transaction ID:', currentTransactionId);
+
+            if (bridge) {
+                bridge.pigual(currentTransactionId);
+            }
+
+            closeModal('modalPigual');
+        }
+
+        // Fermer les modals en cliquant sur l'overlay
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal(e.target.id);
+            }
+        });
+
+        function updateCardColor(id) {
+            const card = document.getElementById(`card-${id}`);
+            const transaction = transactions.find(t => t.id === id);
+            const state = transactionStates[id];
+
+            card.className = 'transaction-card';
+
+            if (transaction.agregation && state.remboursement) {
+                card.classList.add('orange');
+            } else if (transaction.commission && state.remboursement && state.commission) {
+                card.classList.add('blue');
+            } else if (!transaction.commission && !transaction.agregation && state.remboursement) {
+                card.classList.add('green');
+            }
+        }
+
+        function updateFooter() {
+            const completed = transactions.filter(t => {
+                const state = transactionStates[t.id];
+                return t.commission ? (state.remboursement && state.commission) : state.remboursement;
+            }).length;
+
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalCount').textContent = transactions.length;
+            document.getElementById('generateBtn').disabled = false;
+        }
+
+        function generatePDF() {
+            showLoader();
+            if (bridge) bridge.generatePDF();
+        }
+
+        function onPDFGenerated() {
+            hideLoader();
+            openModal('modalPDFGenerated');
+        }
+
+        function confirmReturnHome() {
+            closeModal('modalPDFGenerated');
+            if (bridge) {
+                bridge.goBack();
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(amount) + ' F CFA';
+        }
+
+        function formatNumber(amount) {
+            return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(amount);
+        }
+
+        function toggleDropdown() {
+            document.getElementById('actionsDropdown').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('actionsDropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        function handleBulkReversement() {
+            toggleDropdown();
+            const pendingCount = transactions.filter(t => {
+                const state = transactionStates[t.id];
+                return !state.remboursement;
+            }).length;
+
+            if (pendingCount === 0) {
+                showSuccess('Information', 'Tous les états de reversement sont déjà validés.');
+                return;
+            }
+
+            document.getElementById('bulkReversementMessage').innerHTML =
+                `Voulez-vous vraiment valider tous les états de reversement ?<br><br><strong>${pendingCount} transaction(s)</strong> seront affectées.`;
+            openModal('modalBulkReversement');
+        }
+
+        function confirmBulkValidation(type) {
+            const config = {
+                remboursement: {
+                    stateKey: 'remboursement',
+                    btnId: 'btn-reversement',
+                    bridgeMethod: 'remboursement',
+                    validatedText: '✓ REVERSEMENT VALIDÉ',
+                    modal: 'modalBulkReversement',
+                    label: 'reversement'
+                },
+                commission: {
+                    stateKey: 'commission',
+                    btnId: 'btn-commission',
+                    bridgeMethod: 'commission',
+                    validatedText: '✓ COMMISSION VALIDÉE',
+                    modal: 'modalBulkCommission',
+                    label: 'commission',
+                    filter: t => t.commission > 0
+                }
+            }[type];
+
+            let count = 0;
+            const transactionsToProcess = config.filter ? transactions.filter(config.filter) : transactions;
+
+            transactionsToProcess.forEach(t => {
+                if (!transactionStates[t.id][config.stateKey]) {
+                    transactionStates[t.id][config.stateKey] = true;
+                    updateCardColor(t.id);
+                    if (bridge) bridge[config.bridgeMethod](t.id);
+
+                    const btn = document.getElementById(`${config.btnId}-${t.id}`);
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.textContent = config.validatedText;
+                    }
+                    count++;
+                }
+            });
+
+            updateFooter();
+            updateActionsDropdown();
+            closeModal(config.modal);
+            showSuccess('Validation réussie', `<strong>${count} état(s) de ${config.label}</strong> ont été validés avec succès.`);
+        }
+
+        function confirmBulkReversement() { confirmBulkValidation('remboursement'); }
+        function confirmBulkCommission() { confirmBulkValidation('commission'); }
+
+        function handleBulkCommission() {
+            toggleDropdown();
+            const transactionsWithCommission = transactions.filter(t => t.commission > 0);
+            const pendingCount = transactionsWithCommission.filter(t => !transactionStates[t.id].commission).length;
+
+            if (!transactionsWithCommission.length) {
+                showSuccess('Information', 'Aucune transaction n\'a de commission.');
+                return;
+            }
+
+            if (!pendingCount) {
+                showSuccess('Information', 'Tous les états de commission sont déjà validés.');
+                return;
+            }
+
+            document.getElementById('bulkCommissionMessage').innerHTML =
+                `Voulez-vous vraiment valider tous les états de commission ?<br><br><strong>${pendingCount} transaction(s)</strong> seront affectées.`;
+            openModal('modalBulkCommission');
+        }
+    </script>
+</body>
+</html>

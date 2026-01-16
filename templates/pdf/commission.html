@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 4cm 2cm 3.5cm 2cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #333;
+            position: relative;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .info-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-start;
+            font-size: 14px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 100px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 10px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        tbody tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        th:nth-child(1), td:nth-child(1) { width: 40%; }
+        th:nth-child(2), td:nth-child(2) { width: 30%; }
+        th:nth-child(3), td:nth-child(3) { width: 30%; }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .footer-table {
+            margin-top: 5px;
+            font-weight: bold;
+            background: #fff3cd !important;
+            font-size: 11px;
+        }
+
+        .footer-table td {
+            padding: 10px 8px;
+            border-top: 2px solid #2c3e50;
+            white-space: nowrap;
+        }
+
+
+        .visa-section {
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+
+        .visa-label {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .signature-table th {
+            background: #2c3e50;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .signature-table th:first-child {
+            width: 15%;
+        }
+
+        .signature-table td {
+            padding: 18px 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">{{titre_document}}</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">DATE DE TRAITEMENT :</span>
+                <span>{{date_traitement}}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Période :</span>
+                <span>{{periode_debut}} au {{periode_fin}}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Condition :</span>
+                <span>{{condition_reglement}}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Paiement :</span>
+                <span>{{mode_paiement}}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Service :</span>
+                <span>COLLECTE DE PAIEMENTS</span>
+            </div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nom du Partenaire</th>
+                <th class="text-right">Encaissements Réalisés (TTC)</th>
+                <th class="text-right">Commission à Facturer (TTC)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{transactions}}
+            <tr class="footer-table">
+                <td style="text-align: right; font-weight: bold;">TOTAL</td>
+                <td class="text-right">{{total_montant_trans}}</td>
+                <td class="text-right">{{total_commission}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="visa-section">
+        <div class="visa-label">VISA :</div>
+        <table class="signature-table">
+            <thead>
+                <tr>
+                    <th>FONCTION</th>
+                    <th>NOM ET PRÉNOM(S)</th>
+                    <th>SIGNATURE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
